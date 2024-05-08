@@ -89,11 +89,10 @@ def wait_for_file_ready(
 def execute_ocrmypdf(
     *,
     file_path: Path,
-    archive_dir: Path,
     output_dir: Path,
+    archive_dir: Path | None,
     ocrmypdf_kwargs: dict[str, Any],
     on_success_delete: bool,
-    on_success_archive: bool,
     poll_new_file_seconds: int,
     retries_loading_file: int,
     output_dir_year_month: bool,
@@ -120,7 +119,7 @@ def execute_ocrmypdf(
         if on_success_delete:
             log.info(f'OCR is done. Deleting: {file_path}')
             file_path.unlink()
-        elif on_success_archive:
+        elif archive_dir is not None:
             log.info(f'OCR is done. Archiving {file_path.name} to {archive_dir}')
             shutil.move(file_path, f'{archive_dir}/{file_path.name}')
         else:
@@ -176,8 +175,8 @@ def main(
         ),
     ] = '/output',
     archive_dir: Annotated[
-        Path,
-        typer.Argument(
+        Path | None,
+        typer.Option(
             envvar='OCR_ARCHIVE_DIRECTORY',
             exists=True,
             file_okay=False,
@@ -185,47 +184,40 @@ def main(
             writable=True,
             resolve_path=True,
         ),
-    ] = '/processed',
+    ] = None,
     output_dir_year_month: Annotated[
         bool,
         typer.Option(
             envvar='OCR_OUTPUT_DIRECTORY_YEAR_MONTH',
-            help='Create a subdirectory in the output directory for each year/month',
+            help='Create a subdirectory in the output directory for each year/month.',
         ),
     ] = False,
     on_success_delete: Annotated[
         bool,
         typer.Option(
             envvar='OCR_ON_SUCCESS_DELETE',
-            help='Delete the input file after successful OCR',
-        ),
-    ] = False,
-    on_success_archive: Annotated[
-        bool,
-        typer.Option(
-            envvar='OCR_ON_SUCCESS_ARCHIVE',
-            help='Archive the input file after successful OCR',
+            help='Delete the input file after successful OCR.',
         ),
     ] = False,
     deskew: Annotated[
         bool,
         typer.Option(
             envvar='OCR_DESKEW',
-            help='Deskew the input file before OCR',
+            help='Deskew the input file before OCR.',
         ),
     ] = False,
     ocr_json_settings: Annotated[
         str,
         typer.Option(
             envvar='OCR_JSON_SETTINGS',
-            help='JSON settings to pass to OCRmyPDF (JSON string or file path)',
+            help='JSON settings to pass to OCRmyPDF (JSON string or file path).',
         ),
     ] = None,
     poll_new_file_seconds: Annotated[
         int,
         typer.Option(
             envvar='OCR_POLL_NEW_FILE_SECONDS',
-            help='Seconds to wait before polling a new file',
+            help='Seconds to wait before polling a new file.',
             min=0,
         ),
     ] = 1,
@@ -233,14 +225,14 @@ def main(
         bool,
         typer.Option(
             envvar='OCR_USE_POLLING',
-            help='Use polling instead of filesystem events',
+            help='Use polling instead of filesystem events.',
         ),
     ] = False,
     retries_loading_file: Annotated[
         int,
         typer.Option(
             envvar='OCR_RETRIES_LOADING_FILE',
-            help='Number of times to retry loading a file before giving up',
+            help='Number of times to retry loading a file before giving up.',
             min=0,
         ),
     ] = 5,
@@ -248,17 +240,21 @@ def main(
         LoggingLevelEnum,
         typer.Option(
             envvar='OCR_LOGLEVEL',
-            help='Logging level',
+            help='Logging level.',
         ),
     ] = LoggingLevelEnum.INFO,
     patterns: Annotated[
         str,
         typer.Option(
             envvar='OCR_PATTERNS',
-            help='File patterns to watch',
+            help='File patterns to watch.',
         ),
     ] = '*.pdf,*.PDF',
 ):
+    if archive_dir is not None and on_success_delete:
+        raise typer.BadParameter(
+            'The --archive-dir and --on-success-delete options are mutually exclusive.'
+        )
     ocrmypdf.configure_logging(
         verbosity=(
             ocrmypdf.Verbosity.default
@@ -281,7 +277,6 @@ def main(
         f"OUTPUT_DIRECTORY_YEAR_MONTH: {output_dir_year_month}\n"
         f"ARCHIVE_DIRECTORY: {archive_dir}\n"
         f"ON_SUCCESS_DELETE: {on_success_delete}\n"
-        f"ON_SUCCESS_ARCHIVE: {on_success_archive}\n"
         f"DESKEW: {deskew}\n"
         f"ARGS: {ocr_json_settings}\n"
         f"POLL_NEW_FILE_SECONDS: {poll_new_file_seconds}\n"
@@ -308,7 +303,6 @@ def main(
             'output_dir': output_dir,
             'ocrmypdf_kwargs': json_settings | {'deskew': deskew},
             'on_success_delete': on_success_delete,
-            'on_success_archive': on_success_archive,
             'poll_new_file_seconds': poll_new_file_seconds,
             'retries_loading_file': retries_loading_file,
             'output_dir_year_month': output_dir_year_month,
