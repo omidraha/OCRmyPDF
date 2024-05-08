@@ -131,8 +131,7 @@ Users may need to customize the script to meet their requirements.
     "OCR_INPUT_DIRECTORY", "Set input directory to monitor (recursive)"
     "OCR_OUTPUT_DIRECTORY", "Set output directory (should not be under input)"
     "OCR_ARCHIVE_DIRECTORY", "Set archive directory for processed originals (should not be under input, requires ``OCR_ON_SUCCESS_ARCHIVE`` to be set)"
-    "OCR_ON_SUCCESS_DELETE", "This will delete the input file if the exit code is 0 (OK)"
-    "OCR_ON_SUCCESS_ARCHIVE", "This will move the processed original file to ``OCR_ARCHIVE_DIRECTORY`` if the exit code is 0 (OK). Note that ``OCR_ON_SUCCESS_DELETE`` takes precedence over this option, i.e. if both options are set, the input file will be deleted."
+    "OCR_ON_SUCCESS_DELETE", "This will delete the input file if the exit code is 0 (OK). Mutually exclusive with ``OCR_ARCHIVE_DIRECTORY``."
     "OCR_OUTPUT_DIRECTORY_YEAR_MONTH", "This will place files in the output in ``{output}/{year}/{month}/{filename}``"
     "OCR_DESKEW", "Apply deskew to crooked input PDFs"
     "OCR_JSON_SETTINGS", "A JSON string specifying any other arguments for ``ocrmypdf.ocr``, e.g. ``'OCR_JSON_SETTINGS={""rotate_pages"": true}'``."
@@ -173,7 +172,6 @@ original to ``/processed``. The parameters to this image are:
     "``--volume <path to store results>:/output``", "This is where OCRed files will be stored"
     "``--volume <path to store processed originals>:/processed``", "Archive processed originals here"
     "``--env OCR_OUTPUT_DIRECTORY_YEAR_MONTH=1``", "Define environment variable ``OCR_OUTPUT_DIRECTORY_YEAR_MONTH=1`` to place files in the output in ``{output}/{year}/{month}/{filename}``"
-    "``--env OCR_ON_SUCCESS_ARCHIVE=1``", "Define environment variable ``OCR_ON_SUCCESS_ARCHIVE`` to move processed originals"
     "``--env OCR_DESKEW=1``", "Define environment variable ``OCR_DESKEW``  to apply deskew to crooked input PDFs"
     "``--env PYTHONBUFFERED=1``", "This will force ``STDOUT`` to be unbuffered and allow you to see messages in docker logs"
 
