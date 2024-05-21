@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023 James R. Barlow
 # SPDX-License-Identifier: MPL-2.0
 
-FROM alpine:3.19.1 as base
+FROM arm64v8/alpine:3.19.1 as base
 
 ENV LANG=C.UTF-8
 ENV TZ=UTC
@@ -17,6 +17,19 @@ RUN apk add --no-cache \
     git \
     python3-dev \
     py3-pip
+
+# On arm64, we need to build cffi from source.
+RUN apk add --no-cache \
+    build-base \
+    autoconf \
+    automake \
+    libtool \
+    zlib-dev \
+    libffi-dev \
+    cairo-dev \
+    pkgconfig \
+    ;  \
+    fi
 
 COPY . /app
 
