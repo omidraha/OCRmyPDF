@@ -27,9 +27,7 @@ RUN apk add --no-cache \
     zlib-dev \
     libffi-dev \
     cairo-dev \
-    pkgconfig \
-    ;  \
-    fi
+    pkgconfig
 
 COPY . /app
 
