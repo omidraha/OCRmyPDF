@@ -38,6 +38,7 @@ RUN python3 -m venv .venv
 RUN source .venv/bin/activate \
     && python3 -m pip install --no-cache-dir --upgrade pip \
     && python3 -m pip install --no-cache-dir wheel \
+    && python3 -m pip install --no-cache-dir --pre pikepdf \
     && python3 -m pip install --no-cache-dir .[test,webservice,watcher]
 
 FROM base
